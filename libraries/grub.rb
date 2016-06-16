@@ -11,7 +11,7 @@ module GrubCookbook
   module Resource
     # Resource for managing the Grub Configuration file.
     class Grub < Chef::Resource
-      include Poise(fused: true)
+      include Poise(fused: true, container: true)
       provides(:grub)
 
       attribute(:path, kind_of: String, name_attribute: true)
@@ -25,13 +25,14 @@ module GrubCookbook
             n
           end
         end
-        s.map { |k,v|
+        pre = s.map { |k,v|
             if v.match(/[\W\s]+/) then
               g = "=\"#{v}\""
             else
               g = "=#{v}"
             end
             ["GRUB", k.upcase].join("_") << g}.join("\n")
+        pre + "\n" + subresources.map(&:to_s).join("\n")
       end
 
       action(:create) do
